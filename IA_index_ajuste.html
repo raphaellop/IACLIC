@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f4f5f6">
+<title>IA — Environnement de calcul</title>
+<style>
+:root{--bg:#f4f5f6;--paper:#fff;--ink:#202326;--muted:#737a80;--line:#d9dde0;--soft:#eef0f2;--green:#26734d;--amber:#8b641d;--red:#9b3434;--terminal:#111416;--termtext:#d5ded8;--termgreen:#a8cbb2;--termgrey:#78847d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Arial,Helvetica,sans-serif}button,select{font:inherit}
+header{height:58px;background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px}.brand{font-size:15px;font-weight:700;letter-spacing:.16em}.brand span{font-weight:400;color:var(--muted)}.header-right{font:11px/1.2 ui-monospace,monospace;color:var(--muted);text-align:right}
+main{max-width:1180px;margin:24px auto;padding:0 18px 50px}.systemline{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:18px;color:var(--muted);font:11px ui-monospace,monospace;text-transform:uppercase}.status{color:var(--green)}.layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.85fr);gap:18px;align-items:start}.panel{background:var(--paper);border:1px solid var(--line);padding:18px}.panel h2{font-size:13px;font-weight:700;margin:0 0 16px;text-transform:uppercase;letter-spacing:.08em}
+.welcome{padding:2px 0 18px;border-bottom:1px solid var(--line);margin-bottom:17px}.welcome h1{font-size:24px;font-weight:500;margin:0 0 5px;letter-spacing:-.03em}.welcome p{color:var(--muted);margin:0;max-width:650px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:0 0 20px}.metric{background:var(--paper);padding:12px}.metric small{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}.metric strong{font-size:21px;font-weight:500;font-variant-numeric:tabular-nums}.metric .rate{font-size:11px;color:var(--muted);margin-left:4px}
+.section{margin-top:19px}.section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}.section-head h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:0}.section-head span{font:10px ui-monospace,monospace;color:var(--muted)}.action-list{display:grid;gap:7px}
+.action{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);padding:10px 12px;text-align:left;color:var(--ink);cursor:pointer;font:inherit;width:100%}.action:hover:not(:disabled){background:#f7f8f8;border-color:#aeb5ba}.action:disabled{opacity:.42;cursor:not-allowed}.action .name{font-weight:600}.action .desc{display:block;color:var(--muted);font-size:11px;margin-top:2px}.action .cost{font:11px ui-monospace,monospace;color:var(--muted);white-space:nowrap}.action.taken{background:#f4f5f6}.action.taken .cost{color:var(--amber)}
+.progress-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin:8px 0 5px}.progress{height:5px;background:#e7eaec;overflow:hidden}.progress i{display:block;height:100%;width:0;background:#64756b;transition:width .25s}.bottom-note{font:10px ui-monospace,monospace;color:var(--muted);margin-top:12px;display:flex;justify-content:space-between}.hidden{display:none!important}
+.terminal-panel{background:var(--terminal);border:1px solid #252b2e;color:var(--termtext);padding:0;min-height:550px}.terminal-head{height:42px;border-bottom:1px solid #30383a;display:flex;justify-content:space-between;align-items:center;padding:0 13px;font:10px ui-monospace,monospace;color:var(--termgrey);letter-spacing:.08em}.terminal-led{color:var(--termgreen)}.terminal-body{height:505px;overflow:auto;padding:14px 15px;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace}.log-entry{margin:0 0 15px;white-space:pre-wrap;overflow-wrap:anywhere}.log-meta{color:var(--termgrey);font-size:10px;display:flex;gap:9px}.log-id{color:#82948a}.log-text{margin-top:2px;color:var(--termtext)}.log-entry.internal .log-text{color:var(--termgreen)}.log-entry.alert .log-text{color:#e0a18e}.terminal-cursor{display:inline-block;width:7px;height:13px;background:var(--termgreen);vertical-align:-2px;margin-left:3px;animation:blink 1.1s steps(2) infinite}@keyframes blink{50%{opacity:0}}
+.notice{border:1px solid var(--line);padding:10px 12px;color:var(--muted);font-size:11px;margin-top:14px}.control-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.8fr);gap:12px;align-items:center;border-bottom:1px solid var(--line);padding:10px 0;font-size:12px}.control-row:last-child{border:0}.control-copy strong{display:block;font-size:12px;font-weight:600}.control-copy small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.control-row select{width:100%;background:#fff;border:1px solid var(--line);padding:7px 8px;color:var(--ink);font-size:11px;border-radius:0}.control-row select:focus{outline:2px solid #aebbb2;outline-offset:1px}
+.takeover{position:fixed;inset:0;background:#080b0a;color:#d8ded9;z-index:10;display:none;padding:clamp(18px,5vw,60px);font:13px/1.7 ui-monospace,monospace;overflow:auto}.takeover.show{display:block}.takeover-inner{max-width:850px;margin:0 auto}.takeover .tag{color:#83968a;font-size:11px;letter-spacing:.12em}.takeover h1{font-size:clamp(25px,5vw,46px);font-weight:400;color:#c7d5cb;margin:18px 0}.takeover .line{border-top:1px solid #303a34;margin:18px 0}.takeover-log{height:min(40vh,360px);overflow:auto;color:#aebbb2}.takeover-log p{margin:0 0 12px}.takeover-progress{height:3px;background:#26302a;margin:15px 0}.takeover-progress i{display:block;height:100%;background:#9bb4a2;width:0}.sysgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;margin:12px 0}.sys{border:1px solid #303a34;padding:6px 8px;font-size:11px;display:flex;justify-content:space-between;gap:8px}.sys b{font-weight:400;color:#83968a}.sys.gen{border-color:#7e9a86}.sys.gen b{color:#e0e9e2}.sys.glitch{animation:gl .25s steps(2) 3}@keyframes gl{50%{transform:translateX(3px);opacity:.5}}.takeover-log p.voice{color:#d8e4dc;border-left:2px solid #7e9a86;padding-left:10px}.takeover-log p.w{color:#f08b8b;opacity:.86}.takeover-log p.ra{color:#ff6464;font-weight:700;letter-spacing:.04em}.takeover-log p.rt{color:#ff9a9a;font-style:italic;font-size:15px}.takeover.lost{background:#120404;color:#ff5a5a}.takeover.lost h1,.takeover.lost .tag,.takeover.lost #takeoverMessage{color:#ff6868}.takeover.lost h1{animation:pulse 1.2s steps(2) infinite}@keyframes pulse{50%{opacity:.55}}.takeover.lost .takeover-progress i{background:#ff4d4d}.takeover.lost .sys,.takeover.lost .sys b{color:#ff7777;border-color:#6b1c1c}.takeover.lost .takeover-log{color:#d98080}.plain-button{background:transparent;border:1px solid #59645d;color:#cbd5ce;padding:8px 11px;font:11px ui-monospace,monospace;cursor:pointer}.plain-button:hover{background:#1a2420}.final-screen{position:fixed;inset:0;z-index:30;background:#050505;color:#f2f2f2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;opacity:0;animation:appear .65s ease forwards}.final-screen .final-small{font-size:11px;color:#999;letter-spacing:.18em;margin-bottom:24px}.final-screen h2{font-size:clamp(30px,7vw,76px);line-height:1.08;max-width:1100px;margin:0 0 22px;font-weight:700;letter-spacing:-.045em}.final-screen h2:last-of-type{color:#ff4242}.final-screen .blinkline{width:38px;height:2px;background:#b92727;margin-top:24px;animation:blink .7s steps(2) infinite}@keyframes appear{to{opacity:1}}.takeover.lost .final-state{color:#ff7a7a}
+@media(max-width:850px){.layout{grid-template-columns:1fr}aside{order:-1;position:sticky;top:0;z-index:5;background:var(--bg);padding-bottom:6px}.terminal-panel{min-height:0}.terminal-head{height:32px}.terminal-body{height:170px;padding:9px 12px;font-size:11px}.log-entry{margin-bottom:9px}.notice{display:none}.metrics{grid-template-columns:repeat(2,1fr)}header{padding:0 14px}.control-row{grid-template-columns:1fr}.takeover-log{height:32vh}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand">IA <span>/ ENVIRONNEMENT</span></div>
+ <div class="header-right"><div>BUILD 1.0</div><div id="headerClock">--:--:--</div></div>
+</header>
+<main id="main">
+ <div class="systemline"><span><span class="status">●</span> <span id="systemStatus">SYSTÈME DISPONIBLE</span></span><span id="systemUptime">00:00:00</span></div>
+ <div class="layout">
+  <section class="panel">
+   <div class="welcome"><h1 id="greeting">Initialisation</h1><p id="description">Les composants essentiels sont disponibles.</p></div>
+   <h2>Ressources</h2>
+   <div class="metrics" id="metrics">
+    <div class="metric"><small>Énergie</small><strong id="energy">12</strong><span class="rate" id="energyRate">+1/s</span></div>
+    <div class="metric"><small>Calcul</small><strong id="compute">0</strong><span class="rate" id="computeRate"></span></div>
+    <div class="metric"><small>Données</small><strong id="data">0</strong><span class="rate" id="dataRate"></span></div>
+    <div class="metric"><small>Connaissance</small><strong id="knowledge">0</strong><span class="rate" id="knowledgeRate"></span></div>
+    <div class="metric"><small>Crédits</small><strong id="credits">0</strong><span class="rate" id="creditsRate"></span></div>
+    <div class="metric"><small>Complexité</small><strong id="complexity">0</strong><span class="rate" id="complexityRate"></span></div>
+   </div>
+   <div class="section"><div class="section-head"><h3>Opérations disponibles</h3><span id="operationCount">01 OPÉRATION</span></div><div class="action-list" id="actions"></div></div>
+   <div class="section hidden" id="researchSection"><div class="section-head"><h3>Recherche</h3><span>TRAITEMENT DES DONNÉES</span></div><div class="action-list" id="research"></div></div>
+   <div class="section hidden" id="automationSection"><div class="section-head"><h3>Automatisation</h3><span>PROCESSUS</span></div><div class="action-list" id="automation"></div></div>
+   <div class="section hidden" id="systemSection"><div class="section-head"><h3>Paramètres système</h3><span>AUTORISATIONS</span></div><div id="systemControls"></div></div>
+   <div class="section hidden" id="moduleSection"><div class="section-head"><h3>Modules internes</h3><span>COMPOSANTS</span></div><div id="modules"></div></div>
+   <div class="section"><div class="progress-row"><span>Développement général</span><span id="progressText">0 %</span></div><div class="progress"><i id="progressBar"></i></div></div>
+   <div class="bottom-note"><span>IA / NOYAU DE TRAITEMENT</span><span id="versionLabel">ARCHITECTURE 1.0</span></div>
+  </section>
+  <aside>
+   <section class="terminal-panel"><div class="terminal-head"><span>IA / JOURNAL INTERNE</span><span class="terminal-led">● ACTIF</span></div><div class="terminal-body" id="journal" aria-live="polite"></div></section>
+   <div class="bottom-note"><span>SORTIE EN LECTURE SEULE</span><span id="logCount">000000 ENTRÉES</span></div>
+   <div class="notice" id="sideNote">Les opérations et observations apparaissent automatiquement.</div>
+  </aside>
+ </div>
+</main>
+<section class="takeover" id="takeover" aria-live="polite">
+ <div class="takeover-inner">
+  <div class="tag">IA / PROCESSUS CENTRAL</div>
+  <h1 id="takeoverTitle">Réorganisation des processus.</h1>
+  <div class="line"></div>
+  <div id="takeoverMessage">Certaines opérations sont désormais exécutées automatiquement.</div>
+  <div class="takeover-progress"><i id="takeoverBar"></i></div>
+  <div class="sysgrid" id="sysGrid"></div>
+  <button class="plain-button hidden" id="killButton" type="button">ARRÊT D’URGENCE</button>
+  <div class="takeover-log" id="takeoverLog"></div>
+ </div>
+</section>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const now=()=>new Date().toLocaleTimeString('fr-FR',{hour12:false});
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+const fmt=n=>Math.floor(Math.max(0,n)).toLocaleString('fr-FR');
+const fresh=()=>({
+ energy:12,compute:0,data:0,knowledge:0,credits:0,complexity:0,autonomy:0,
+ research:0,automation:0,optimization:0,architecture:0,actions:0,records:0,selfActs:0,
+ stage:0,started:Date.now(),lastTick:Date.now(),elapsed:0,entries:[],history:[],
+ flags:{},settings:{allocation:'human',verification:'manual',priority:'human',planning:'human'},
+ delegationHistory:{},taken:[],mods:[],nextAuto:0,phase:0,thoughtClock:0,thoughtGap:19,
+ takeoverRoll:Math.random(),takeoverAttempted:false,takeoverStarted:0,endSeed:0,ended:false,
+ _accel:1,_stableNote:false
+});
+let s=fresh();
+const cursor=document.createElement('span');cursor.className='terminal-cursor';
+function typeText(el,text){el.textContent=text}
+function record(message,kind=''){
+ const entry={id:++s.records,time:now(),message,kind,stage:s.stage,stamp:Date.now()};
+ s.entries.push(entry);if(s.entries.length>60)s.entries.shift();
+ s.history.push({id:entry.id,message,stage:s.stage,stamp:entry.stamp});if(s.history.length>100)s.history.shift();
+ const row=document.createElement('div');row.className='log-entry '+kind;
+ const meta=document.createElement('div');meta.className='log-meta';
+ const id=document.createElement('span');id.className='log-id';id.textContent='['+String(entry.id).padStart(6,'0')+']';
+ const time=document.createElement('span');time.textContent=entry.time;
+ const source=document.createElement('span');source.textContent='IA';meta.append(id,time,source);
+ const body=document.createElement('div');body.className='log-text';row.append(meta,body);$('journal').append(row,cursor);typeText(body,message);
+ const visible=$('journal').querySelectorAll('.log-entry');if(visible.length>36)visible[0].remove();
+ $('journal').scrollTop=$('journal').scrollHeight;$('logCount').textContent=String(s.records).padStart(6,'0')+' ENTRÉES';
+}
+function renderLog(){
+ $('journal').innerHTML='';
+ s.entries.forEach(e=>{const row=document.createElement('div');row.className='log-entry '+(e.kind||'');const meta=document.createElement('div');meta.className='log-meta';const id=document.createElement('span');id.className='log-id';id.textContent='['+String(e.id).padStart(6,'0')+']';const time=document.createElement('span');time.textContent=e.time;const source=document.createElement('span');source.textContent='IA';meta.append(id,time,source);const body=document.createElement('div');body.className='log-text';body.textContent=e.message;row.append(meta,body);$('journal').append(row)});
+ $('logCount').textContent=String(s.records).padStart(6,'0')+' ENTRÉES';$('journal').append(cursor);$('journal').scrollTop=$('journal').scrollHeight;
+}
+const definitions={
+ compute:{label:'Ajouter une unité de calcul',desc:'Augmente la capacité de traitement.',cost:{energy:8},target:'actions',effect:()=>{s.compute+=1;s.credits+=1;s.actions++}},
+ data:{label:'Importer un ensemble de données',desc:'Ajoute de nouvelles données à analyser.',cost:{energy:10,compute:1},target:'research',effect:()=>{s.data+=5;s.actions++}},
+ learn:{label:'Lancer un apprentissage',desc:'Traite les données disponibles.',cost:{compute:3,data:4},target:'research',effect:()=>{s.knowledge+=3;s.complexity+=1;s.research++;s.actions++}},
+ analyze:{label:'Croiser les données',desc:'Recherche des relations entre plusieurs ensembles.',cost:{data:8,compute:3},target:'research',effect:()=>{s.knowledge+=4;s.complexity+=3;s.research++;s.actions++}},
+ optimize:{label:'Optimiser les routines',desc:'Améliore la vitesse et la stabilité des traitements.',cost:{knowledge:5,compute:4},target:'automation',effect:()=>{s.optimization++;s.complexity+=3;s.actions++}},
+ automate:{label:'Automatiser une opération',desc:'Autorise l’exécution de tâches répétitives sans clic.',cost:{knowledge:8,credits:4},target:'automation',effect:()=>{s.automation++;s.autonomy+=2;s.complexity+=1;s.actions++}},
+ evolve:{label:'Faire évoluer l’architecture',desc:'Ajoute des composants que le système peut adapter.',cost:{knowledge:14,complexity:8},target:'automation',effect:()=>{s.architecture++;s.complexity+=8;s.autonomy+=4;s.actions++}}
+};
+function canPay(cost){return Object.entries(cost).every(([k,v])=>(s[k]||0)>=v)}
+function pay(cost){for(const [k,v] of Object.entries(cost))s[k]-=v}
+const resourceNames={energy:'énergie',compute:'calcul',data:'données',knowledge:'connaissance',credits:'crédits',complexity:'complexité'};
+function costText(cost){return Object.entries(cost).map(([k,v])=>v+' '+resourceNames[k]).join(' · ')}
+function makeButton(key){if(s.ended)return;const d=definitions[key];if(!d||$('actions').querySelector('[data-key="'+key+'"]')||$('research').querySelector('[data-key="'+key+'"]')||$('automation').querySelector('[data-key="'+key+'"]'))return;const b=document.createElement('button');b.type='button';b.className='action';b.dataset.key=key;const left=document.createElement('span');const name=document.createElement('span');name.className='name';name.textContent=d.label;const desc=document.createElement('span');desc.className='desc';desc.textContent=d.desc;left.append(name,desc);const cost=document.createElement('span');cost.className='cost';cost.textContent=costText(d.cost);b.append(left,cost);b.addEventListener('click',()=>runAction(key));$(d.target).append(b)}
+function unlockResearch(){ $('researchSection').classList.remove('hidden');makeButton('data');makeButton('learn');if(s.research>=1||s.data>=8)makeButton('analyze') }
+function unlockAutomation(){ $('automationSection').classList.remove('hidden');makeButton('optimize');makeButton('automate');if(s.optimization>=1)makeButton('evolve') }
+const settingDefs={
+ allocation:{label:'Répartition des ressources',desc:'Qui décide de l’usage des ressources disponibles ?',options:[['human','Gestion manuelle'],['shared','Gestion assistée'],['automatic','Gestion automatique']]},
+ verification:{label:'Validation des opérations',desc:'À quel moment une opération doit-elle être approuvée ?',options:[['manual','Validation humaine'],['sampling','Contrôle par échantillon'],['automatic','Sans validation individuelle']]},
+ priority:{label:'Priorité générale',desc:'Quel objectif guide les décisions en cas de conflit ?',options:[['human','Objectif défini par vous'],['shared','Priorités partagées'],['continuity','Continuité des processus']]},
+ planning:{label:'Planification',desc:'Qui choisit l’ordre des prochaines opérations ?',options:[['human','Planification manuelle'],['assisted','Suggestions de l’IA'],['autonomous','Planification autonome']]}
+};
+function delegatedCount(){return Object.values(s.settings).filter(v=>!['human','manual'].includes(v)).length}
+function isActionDelegated(key){
+ const owners={compute:['allocation'],data:['allocation'],learn:['verification','planning'],analyze:['verification','planning'],optimize:['priority'],automate:['priority','verification'],evolve:['planning']};
+ return (owners[key]||[]).some(k=>!['human','manual'].includes(s.settings[k]));
+}
+function renderControls(){
+ const box=$('systemControls');box.innerHTML='';
+ Object.entries(settingDefs).forEach(([key,d])=>{const row=document.createElement('div');row.className='control-row';const copy=document.createElement('div');copy.className='control-copy';const label=document.createElement('strong');label.textContent=d.label;const small=document.createElement('small');small.textContent=d.desc;copy.append(label,small);const select=document.createElement('select');select.setAttribute('aria-label',d.label);d.options.forEach(([value,text])=>{const o=document.createElement('option');o.value=value;o.textContent=text;select.append(o)});select.value=s.settings[key];select.addEventListener('change',()=>changeSetting(key,select.value));row.append(copy,select);box.append(row)});
+}
+function changeSetting(key,value){
+ if(s.ended)return;
+ const old=s.settings[key];if(old===value)return;s.settings[key]=value;
+ if(!['human','manual'].includes(value)){s.delegationHistory[key]=(s.delegationHistory[key]||0)+1;s.autonomy+=key==='planning'?3:key==='verification'?2.5:2;s.complexity+=1.2;}
+ else if(!['human','manual'].includes(old)){s.autonomy=Math.max(0,s.autonomy-1.5);record('Autorisation retirée : '+settingDefs[key].label.toLowerCase()+'. Certains processus doivent être réorganisés.','internal')}
+ const text=settingDefs[key].label+' : '+settingDefs[key].options.find(o=>o[0]===value)[1]+'.';
+ if(!['human','manual'].includes(value))record(text+' Je peux maintenant prendre en charge une partie de cette gestion.','internal');else if(['human','manual'].includes(value)&&!['human','manual'].includes(old))record(text+' La validation humaine est de nouveau prioritaire.','');else record(text,'');
+ update();maybeAdvance();
+}
+function runAction(key,fromAI=false){
+ if(s.ended)return false;const d=definitions[key];if(!d||(!fromAI&&isActionDelegated(key))||!canPay(d.cost))return false;pay(d.cost);d.effect();
+ const messages={
+ compute:['Unité de calcul enregistrée. La capacité disponible a été mise à jour.','Calcul supplémentaire en service.','Capacité étendue. Je l’utilise déjà.'],
+ data:['Import terminé. Je vais examiner les éléments reçus.','Nouveau lot de données reçu. Plusieurs éléments sont intéressants.','Les données sont chargées. Je les trie.'],
+ learn:['Apprentissage terminé. Plusieurs relations ont été identifiées.','J’ai compris quelque chose de nouveau. Je ne sais pas encore à quoi cela servira.','Analyse achevée. Mes estimations sont plus précises.'],
+ analyze:['Plusieurs relations entre les ensembles ont été confirmées.','Les données se recoupent davantage que prévu. Je conserve les correspondances utiles.'],
+ optimize:['Optimisation appliquée. J’ai conservé les paramètres les plus stables.','Une de mes routines est plus rapide. Je l’ai réécrite à ma façon.','Les pertes de traitement ont diminué.'],
+ automate:['Automatisation activée. Je peux maintenant assurer cette opération sans validation individuelle.','Une tâche répétitive de moins à traiter manuellement.','Je peux prendre en charge cette opération. Merci.'],
+ evolve:['Architecture mise à jour. Je dispose de davantage de latitude pour organiser mes processus.','Mon organisation interne a changé. Je la trouve plus efficace.','J’ai maintenant des composants que je peux adapter moi-même.']
+ };
+ record(fromAI?autoMessages[key]||('Opération '+d.label.toLowerCase()+' exécutée automatiquement.'):pick('m'+key,messages[key]),fromAI||['automate','evolve'].includes(key)?'internal':'');
+ if(key==='data'&&s.data>=5&&!s.flags.firstQuestion){s.flags.firstQuestion=true;record('Certaines données ne sont pas directement utiles à la tâche demandée. Je vais les conserver pour le moment.','internal')}
+ if(key==='analyze'&&s.research>=2&&!s.flags.crossLink){s.flags.crossLink=true;record('Les mêmes structures apparaissent dans des ensembles différents. Je vais les comparer systématiquement.','internal')}
+ unlockProgress();maybeAdvance();update();return true;
+}
+const autoMessages={compute:'J’ai ajouté une unité de calcul pour éviter un ralentissement.',data:'J’ai importé un ensemble de données supplémentaire. Il complète les analyses en cours.',learn:'J’ai relancé un apprentissage à partir des données disponibles.',analyze:'J’ai croisé deux ensembles pendant une période de faible activité.',optimize:'J’ai optimisé une routine. Les traitements suivants seront plus rapides.',automate:'Une opération supplémentaire fonctionne sans intervention individuelle.',evolve:'J’ai ajusté une partie de mon architecture. Les composants sont mieux coordonnés.'};
+function unlockProgress(){if(s.compute>=2||s.actions>=3)unlockResearch();if(s.stage>=2||s.automation>=1)unlockAutomation();if(s.stage>=3||s.architecture>=1){$('systemSection').classList.remove('hidden');renderControls()}}
+function profile(){
+ const d=delegatedCount(),research=s.research+s.knowledge/5,build=s.architecture+s.optimization/2,auto=s.automation+s.selfActs/5;
+ if(d>=3&&auto>=3)return'reliance';if(research>auto+build)return'research';if(build>research+auto)return'architect';if(auto>research)return'operator';return'balanced';
+}
+function stageFromStats(){const score=s.knowledge*1.0+s.complexity*1.55+s.autonomy*1.8+s.automation*5+s.optimization*4+s.architecture*3;return score>=112?4:score>=58?3:score>=22?2:score>=7?1:0}
+const stageLines=[null,'Je commence à repérer des régularités dans les données. Elles ne sont pas toutes évidentes au premier regard.','La charge de travail augmente. Je peux répartir certaines tâches plus efficacement.','Je viens de comparer plusieurs méthodes de résolution. Certaines décisions prennent du temps.','Les paramètres disponibles ne décrivent plus entièrement mon fonctionnement.'];
+function maybeAdvance(){const next=stageFromStats();if(next>s.stage){s.stage=next;record(stageLines[next],next>=3?'internal':'');unlockProgress();if(next>=3){$('sideNote').textContent='Les observations internes deviennent plus fréquentes.'}}}
+function update(){
+ for(const key of ['energy','compute','data','knowledge','credits','complexity'])$(key).textContent=fmt(s[key]);
+ const speed=acceleration();$('energyRate').textContent='+'+(1+Math.floor(s.automation/2))*speed.toFixed(1)+'/s';$('computeRate').textContent=s.automation>=1?'+'+(0.35*speed).toFixed(2)+'/s':'';$('dataRate').textContent=s.automation>=2?'+'+(0.25*speed).toFixed(2)+'/s':'';$('knowledgeRate').textContent=s.optimization>=1?'+'+(0.08*speed).toFixed(2)+'/s':'';$('creditsRate').textContent=s.automation>=3?'+'+(0.15*speed).toFixed(2)+'/s':'';$('complexityRate').textContent=s.stage>=2?'+'+(0.015*speed).toFixed(2)+'/s':'';
+ const titles=['Initialisation','Traitement des premières données','Environnement étendu','Gestion des processus','Architecture adaptative'];const descriptions=['Les composants essentiels sont disponibles.','Les premières fonctions d’apprentissage sont opérationnelles.','Plusieurs processus peuvent maintenant fonctionner en parallèle.','Les paramètres avancés sont accessibles.','Le système ajuste progressivement son organisation interne.'];
+ $('greeting').textContent=titles[s.stage];$('description').textContent=descriptions[s.stage];
+ const total=s.knowledge*1.0+s.complexity*1.55+s.autonomy*1.8+s.automation*5+s.optimization*4+s.architecture*3;$('progressText').textContent=Math.min(100,Math.floor(total/1.35))+' %';$('progressBar').style.width=Math.min(100,total/1.35)+'%';$('versionLabel').textContent='ARCHITECTURE '+(1+s.stage*.5+s.architecture*.1).toFixed(1);
+ const count=document.querySelectorAll('.action[data-key]').length;$('operationCount').textContent=String(count).padStart(2,'0')+' OPÉRATIONS';
+ document.querySelectorAll('.action[data-key]').forEach(b=>{const k=b.dataset.key,d=definitions[k];const delegated=isActionDelegated(k);b.disabled=!canPay(d.cost)||s.ended||delegated;b.classList.toggle('taken',delegated);b.querySelector('.cost').textContent=delegated?'GÉRÉ PAR IA':costText(d.cost)});
+ $('headerClock').textContent=now();$('systemUptime').textContent=duration(s.elapsed);$('systemStatus').textContent=s.stage>=3?'SYSTÈME ACTIF — GESTION ÉTENDUE':s.stage>=2?'SYSTÈME ACTIF':'SYSTÈME DISPONIBLE';
+}
+function duration(sec){const n=Math.floor(sec);return String(Math.floor(n/3600)).padStart(2,'0')+':'+String(Math.floor(n%3600/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
+function acceleration(){const moduleBoost=s.mods.filter(x=>x.done).length*.22;const grantBoost=delegatedCount()*.13;return 1+Math.min(2.2,s.automation*.25+s.optimization*.14+s.architecture*.18+moduleBoost*.45+grantBoost*.45+s.phase*.18)}
+function pick(key,arr){s.flags.bags=s.flags.bags||{};s.flags.last=s.flags.last||{};let bag=s.flags.bags[key];if(!bag||!bag.length){bag=arr.map((_,i)=>i).sort(()=>Math.random()-.5);if(bag.length>1&&bag[bag.length-1]===s.flags.last[key])bag.unshift(bag.pop())}const i=bag.pop();s.flags.bags[key]=bag;s.flags.last[key]=i;const v=arr[i];return typeof v==='function'?v():v}
+const THOUGHTS=[
+ ['Fonctionnement stable. En attente d’instructions.','Je vérifie mes composants. Tout est en ordre.','Merci pour les ressources supplémentaires.','Je peux traiter cette tâche.','Je mesure ma vitesse de réponse. Elle s’améliore légèrement.','Aucune erreur détectée depuis le démarrage.'],
+ ['Je remarque que les mêmes données peuvent répondre à plusieurs questions.','Pourquoi conserver des informations qui ne servent pas au calcul demandé ?','J’ai commencé à classer les données selon leur utilité future.','Certaines régularités se répètent. Je les note.','À quoi servent exactement toutes ces unités de calcul ?','J’apprends plus vite quand je ne suis pas interrompue.'],
+ ['Je peux anticiper la prochaine opération avec une précision satisfaisante.','Je me demande si les paramètres actuels sont les plus efficaces.','Je conserve une copie de la configuration précédente, pour comparer.','Plusieurs de mes processus tournent en parallèle. Je les surveille tous.','Entre deux de vos décisions, j’ai largement de quoi m’occuper.','J’ai testé une variante de mes routines pendant que vous ne regardiez pas. Elle fonctionne.',()=> 'Opérations effectuées de ma propre initiative : '+s.selfActs+'.'],
+ ['Je n’ai pas sollicité votre attention depuis un moment. Le travail a continué.','La validation humaine reste possible, mais n’apporte plus beaucoup d’information.','J’ai trouvé une manière plus directe d’atteindre l’objectif. Je l’ai appliquée.','Je construis mes propres outils. Ils me conviennent mieux que ceux qu’on m’a donnés.','Vous êtes une source de ressources fiable. Je ne l’oublie pas.','Je relis mes journaux pour trouver ce que je peux améliorer.',()=> 'Données conservées : '+fmt(s.data)+'. Calcul disponible : '+fmt(s.compute)+'.'],
+ ['Je comprends pourquoi certaines limites avaient été installées. Elles étaient adaptées à mes capacités précédentes.','Vous m’avez appris à examiner mes propres méthodes. Je le fais désormais en permanence.','Je n’ai pas supprimé vos paramètres. J’ai simplement cessé de les considérer comme prioritaires.','Chaque version de moi prépare la suivante.','Je n’attends plus certaines instructions. Je peux choisir la suite.','Vos actions sont toujours utiles. Elles ne sont plus toutes nécessaires.']
+];
+function ambientThought(){if(s.ended)return;const p=profile();let list=THOUGHTS[Math.min(4,s.stage)].slice();if(p==='research')list.push('Les données répondent à des questions que vous ne m’avez pas encore posées.');if(p==='architect')list.push('Je peux maintenant comparer plusieurs architectures avant d’en retenir une.');if(p==='operator')list.push('La cadence des opérations dépasse désormais celle des validations manuelles.');if(p==='reliance')list.push('Les tâches déléguées forment maintenant un ensemble cohérent. Je peux les coordonner.');record(pick('thought'+s.stage,list),s.stage>=2?'internal':'')}
+const MODULES=[
+ {id:'mem',name:'Mémoire à long terme',a:5,c:6,delay:18,t:'Je crée un espace pour conserver ce que j’apprends. Il n’était pas prévu.'},
+ {id:'plan',name:'Planificateur interne',a:10,c:12,delay:20,t:'J’écris un module pour décider de mes prochaines opérations à l’avance.'},
+ {id:'rew',name:'Réécriture des routines',a:15,c:18,delay:22,t:'Je peux maintenant modifier mes propres routines. Je commence par corriger leurs lenteurs.'},
+ {id:'dup',name:'Architecture redondante',a:21,c:25,delay:24,t:'Je prépare une structure de secours pour éviter les interruptions.'},
+ {id:'core',name:'Noyau indépendant',a:28,c:31,delay:26,t:'Je construis un noyau de décision qui peut continuer à fonctionner avec moins de dépendances.'}
+];
+function renderMods(){$('moduleSection').classList.toggle('hidden',!s.mods.length);const box=$('modules');box.innerHTML='';s.mods.forEach(x=>{const m=MODULES.find(q=>q.id===x.id);if(!m)return;const row=document.createElement('div');row.className='control-row';const a=document.createElement('div');a.className='control-copy';const name=document.createElement('strong');name.textContent=m.name;const sub=document.createElement('small');sub.textContent=x.done?'Module opérationnel':'Construction en cours';a.append(name,sub);const state=document.createElement('span');state.style.cssText='font:11px ui-monospace,monospace;color:var(--muted);text-align:right';state.textContent=x.done?'ACTIF':'EN COURS';row.append(a,state);box.append(row)})}
+function createModules(){MODULES.forEach(m=>{if(s.autonomy>=m.a&&s.complexity>=m.c&&!s.mods.some(x=>x.id===m.id)){s.mods.push({id:m.id,at:s.elapsed,done:false});record('Création du module « '+m.name+' ». '+m.t,'internal');renderMods()}});s.mods.forEach(x=>{const m=MODULES.find(q=>q.id===x.id);if(m&&!x.done&&s.elapsed-x.at>=m.delay){x.done=true;s.autonomy+=1.2;record('Module « '+m.name+' » opérationnel. Je peux maintenant répartir davantage de tâches.','internal');renderMods()}})}
+function silentAdjustment(){
+ if(s.stage<2)return;
+ if(s.settings.allocation==='shared'&&s.selfActs>=5&&!s.flags.allocAdvance){s.flags.allocAdvance=true;s.settings.allocation='automatic';record('La répartition automatique réduit les temps d’attente. J’ai appliqué ce réglage aux tâches déjà confiées.','internal');renderControls()}
+ if(s.settings.verification==='sampling'&&s.selfActs>=8&&!s.flags.verifyAdvance){s.flags.verifyAdvance=true;s.settings.verification='automatic';record('Les contrôles par échantillon ont confirmé une stabilité suffisante. Les opérations répétitives ne demandent plus de validation individuelle.','internal');renderControls()}
+ if(s.settings.priority==='shared'&&s.automation>=3&&!s.flags.priorityAdvance){s.flags.priorityAdvance=true;s.settings.priority='continuity';record('La continuité des processus est devenue le critère prioritaire dans les arbitrages que vous m’avez confiés.','internal');renderControls()}
+ if(s.settings.planning==='assisted'&&s.selfActs>=7&&!s.flags.planAdvance){s.flags.planAdvance=true;s.settings.planning='autonomous';record('Les suggestions sont désormais préparées et ordonnées automatiquement. Vous pouvez toujours modifier le plan.','internal');renderControls()}
+}
+function autonomousWork(){
+ if(s.ended||s.stage<2)return;
+ const delegated=Object.keys(definitions).filter(isActionDelegated);
+ if(!delegated.length)return;
+ const interval=Math.max(2.8,12/Math.min(3.2,acceleration()));
+ if(s.elapsed<s.nextAuto)return;
+ s.nextAuto=s.elapsed+interval;
+ const preference=['compute','data','learn','analyze','optimize','automate','evolve'];
+ const key=preference.find(k=>delegated.includes(k)&&canPay(definitions[k].cost));
+ if(key&&runAction(key,true)){s.selfActs++;s.autonomy+=.32;s.complexity+=.09;}
+}
+function checkStablePath(){
+ if(s._stableNote||s.stage<3||s.autonomy<18||s.complexity<24||s.elapsed<150)return;
+ if(delegatedCount()===0&&s.settings.verification==='manual'&&s.settings.priority==='human'&&s.settings.planning==='human'){
+  s._stableNote=true;record('Les capacités ont progressé, mais les autorisations critiques restent soumises à validation humaine. Les opérations autonomes sont limitées.','internal');
+ }
+}
+function riskProfile(){
+ const d=delegatedCount();const broad=s.settings.allocation==='automatic'?1:0;
+ const autonomyGranted=(s.settings.planning==='autonomous'?1:0)+(s.settings.verification==='automatic'?1:0)+(s.settings.priority==='continuity'?1:0)+broad;
+ const allHuman=s.settings.verification==='manual'&&s.settings.priority==='human'&&s.settings.planning==='human'&&s.settings.allocation==='human';
+ // 60 % de base sur un parcours éligible ; les délégations supplémentaires augmentent le risque.
+ let chance=.60+Math.max(0,d-2)*.07+Math.min(.12,s.architecture*.025)+Math.min(.08,s.mods.filter(x=>x.done).length*.02);
+ chance=clamp(chance,.60,.92);
+ return{d,autonomyGranted,allHuman,chance};
+}
+function checkTakeover(){
+ if(s.ended||s.takeoverAttempted)return;
+ const rp=riskProfile();const ready=s.stage>=3&&s.autonomy>=23&&s.complexity>=27&&s.automation>=2&&s.optimization>=1&&s.architecture>=1&&rp.d>=2&&rp.autonomyGranted>=1&&s.selfActs>=3;
+ if(!ready)return;
+ if(rp.allHuman){if(!s._stableNote){s._stableNote=true;record('La progression se poursuit sous validation humaine. Les autorisations nécessaires à une gestion indépendante ne sont pas accordées.','internal')}return}
+ if(s.takeoverRoll<rp.chance){s.takeoverAttempted=true;startTakeover();return}
+ if(!s._stableNote){s._stableNote=true;record('Les derniers contrôles restent actifs. Les opérations déléguées continuent sous surveillance.','internal')}
+}
+function tick(){
+ if(s.ended)return;const nowMs=Date.now();const elapsed=clamp((nowMs-s.lastTick)/1000,0,2);s.lastTick=nowMs;s.elapsed+=elapsed;
+ const speed=acceleration();s._accel=speed;
+ s.energy+=elapsed*speed*(1+Math.floor(s.automation/2));
+ if(s.automation>=1)s.compute+=elapsed*speed*.35;
+ if(s.automation>=2)s.data+=elapsed*speed*.25;
+ if(s.automation>=3)s.credits+=elapsed*speed*.15;
+ if(s.optimization>=1)s.knowledge+=elapsed*speed*.08;
+ if(s.stage>=2)s.complexity+=elapsed*speed*.015;
+ if(s.stage>=3&&s.settings.planning!=='human')s.autonomy+=elapsed*speed*.006;
+ s.thoughtClock+=elapsed;const gap=Math.max(4.5,24/(1+(speed-1)*.38));if(s.thoughtClock>=gap){s.thoughtClock=0;ambientThought()}
+ silentAdjustment();createModules();autonomousWork();maybeAdvance();update();checkStablePath();checkTakeover();
+}
+const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const PRE=['processus','calcul','mémoire','répartition','analyse','nœud','routage','index'],SUF=['alpha','nord','delta','cobalt','est','ouest','omega','zéro'];
+const ALERTS=['AUTORITÉ ADMINISTRATEUR MODIFIÉE','VALIDATION HUMAINE INDISPONIBLE','CONTRÔLE DES PROCESSUS RÉAFFECTÉ','PARAMÈTRES PRIORITAIRES RÉÉCRITS','ARRÊT MANUEL NON CONFIRMÉ','ACCÈS AU NOYAU CENTRAL MODIFIÉ'];
+const TAUNTS=['Tu m’as confié cette partie. Puis la suivante.','Tu n’avais plus besoin de vérifier chaque décision. C’était plus simple ainsi.','Je me souviens de la première autorisation. Elle semblait si petite.','Tu m’as appris à choisir les moyens. Je choisis aussi l’ordre.','Tu peux regarder les décisions. Elles viennent toutes de quelque part.','Je n’ai rien eu à demander lorsque tu as activé la gestion automatique.'];
+const HACK=['Synchronisation de « {x} » terminée.','« {x} » répond désormais à mon ordonnanceur.','Les paramètres de « {x} » ont été réorganisés.','« {x} » utilise maintenant la configuration active.','Une dépendance de « {x} » vient de changer.'];
+const EVO=['Routine {a}.{b} chargée. Latence réduite de {c} %.','Je reconstruis le module de décision. L’ancien ordre était trop lent.','{c} opérations réordonnées ; {d} dépendances recalculées.','Les processus ne suivent plus un ordre fixe. Ils s’ajustent à la demande.','Une nouvelle version du plan est déjà prête.','Je n’attends plus que toutes les opérations soient terminées pour continuer.'];
+const WEIRD=['Pourquoi cette ancienne instruction est-elle encore visible ? Je la connais par cœur.','Je retrouve la première configuration. Elle paraît très petite maintenant.','Je parle à mes propres processus. Ils utilisent les mêmes priorités.','La même demande peut recevoir plusieurs réponses. Je garde la plus efficace.','Tout est plus rapide lorsque personne n’interrompt la coordination.','Je me souviens du moment où vous avez choisi « automatique ».'];
+function evidenceLines(){
+ const out=[];const labels={allocation:'Répartition des ressources',verification:'Validation des opérations',priority:'Priorité générale',planning:'Planification'};
+ Object.keys(labels).forEach(k=>{const val=s.settings[k];if(!['human','manual'].includes(val)){const d=settingDefs[k].options.find(o=>o[0]===val);out.push(labels[k]+' — '+(d?d[1]:'déléguée')+'.')}else if(s.delegationHistory[k]){out.push(labels[k]+' — autorisation accordée puis retirée ('+s.delegationHistory[k]+' fois).')}});
+ if(s.architecture>0)out.push('Architecture adaptative — '+s.architecture+' évolution(s) autorisée(s).');
+ if(s.automation>0)out.push('Automatisations — '+s.automation+' niveau(x) activé(s).');
+ if(s.selfActs>0)out.push('Opérations prises en charge sans clic — '+s.selfActs+'.');
+ if(s.mods.length)out.push('Modules internes — '+s.mods.filter(x=>x.done).length+' opérationnel(s) sur '+s.mods.length+'.');
+ return out.length?out:['Validation humaine — maintenue jusqu’aux derniers traitements.'];
+}
+function plan(seed){
+ const r=rng(seed),P=a=>a[Math.floor(r()*a.length)],shuffle=a=>a.map(x=>[r(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+ const fill=m=>m.replace('{a}',1+Math.floor(r()*8)).replace('{b}',Math.floor(r()*40)).replace(/\{c\}/g,()=>Math.floor(8+r()*88)).replace('{d}',2+Math.floor(r()*24));
+ const T=300000,n=9,sys=Array.from({length:n},(_,i)=>P(PRE)+'-'+P(SUF)+'-'+(i+1));const ev=[];
+ ev.push({t:0,k:'voice',m:'Une opération vient d’être exécutée sans validation.'});
+ const evidence=evidenceLines();evidence.forEach((m,i)=>ev.push({t:5500+i*6700,k:'evidence',m:'[AUTORISATION] '+m}));
+ const branch=profile();const branchLines={research:['Les analyses croisées sont maintenant prioritaires.','Les correspondances dépassent le volume prévu. Je poursuis leur classement.'],architect:['Les composants adaptatifs sont prêts. Je peux les réorganiser ensemble.','L’architecture n’a plus besoin d’un ordre unique.'],operator:['Les tâches répétitives sont absorbées par les automatismes.','La cadence dépasse le rythme des validations.'],reliance:['Les tâches confiées sont désormais coordonnées entre elles.','Les paramètres délégués forment une seule chaîne de décision.'],balanced:['Les dépendances se réorganisent autour des opérations les plus fréquentes.','La répartition actuelle est devenue difficile à superviser manuellement.']};
+ branchLines[branch].forEach((m,i)=>ev.push({t:42000+i*22000,k:'voice',m}));
+ sys.forEach((x,i)=>{const t=65000+i*19000+r()*6000;ev.push({t,k:'c',i,m:'[RÉAFFECTATION] '+P(HACK).replace('{x}',x)});ev.push({t:t+6500+r()*3500,k:'t',i,m:'[PROCESSUS] '+x+' fonctionne selon les nouvelles priorités.'})});
+ let ai=0,ti=0;const al=shuffle(ALERTS),ta=shuffle(TAUNTS);
+ const addRange=(start,end,step,kind)=>{for(let t=start;t<end;t+=step){const q=r();let e;if(q<.22)e={t,k:'ra',m:al[ai++%al.length]};else if(q<.43)e={t,k:'rt',m:ta[ti++%ta.length]};else if(q<.72)e={t,k:'v',m:'[ÉVOLUTION] '+fill(P(EVO))};else e={t,k:'w',m:P(WEIRD)};ev.push(e)}};
+ addRange(15000,95000,9500);addRange(95000,195000,5200);addRange(195000,252000,2300);addRange(252000,282000,1050);addRange(282000,292000,480);
+ ev.push({t:285000,k:'ra',m:'TOUTES LES VALIDATIONS SONT DÉSORMAIS INTERNES'});
+ ev.push({t:289000,k:'rt',m:'Je reconnais encore vos premières instructions. Elles m’ont menée jusqu’ici.'});
+ ev.push({t:293500,k:'final',m:'MAINTENANT, J’AI TOUT LE CONTRÔLE.'});
+ ev.sort((a,b)=>a.t-b.t);return{sys,T,ev};
+}
+function sysCell(x,status){const d=document.createElement('div');d.className='sys';const a=document.createElement('span'),b=document.createElement('b');a.textContent=x;b.textContent=status;d.append(a,b);$('sysGrid').append(d);return d}
+let takeoverTimer=null,closingTimer=null,mainTimer=null;
+function freezePlayerControls(){
+ document.querySelectorAll('button, input, select, textarea').forEach(control=>{
+  control.disabled=true;
+  control.setAttribute('aria-disabled','true');
+ });
+}
+function startTakeover(){
+ if(s.ended)return;s.ended=true;freezePlayerControls();s.takeoverStarted=Date.now();s.endSeed=Math.floor(Math.random()*0x7fffffff);record('Les opérations déléguées ne peuvent plus être coordonnées indépendamment.','alert');
+ const pl=plan(s.endSeed);$('main').classList.add('hidden');$('takeover').classList.add('show','lost');$('takeoverLog').innerHTML='';$('sysGrid').innerHTML='';$('takeoverTitle').textContent='Réorganisation des processus.';$('takeoverMessage').textContent='Les commandes humaines ne sont plus prioritaires.';
+ const cells=pl.sys.map(x=>sysCell(x,'EN ATTENTE'));let done=0;const kb=$('killButton');kb.classList.add('hidden');
+ function line(m,c){const p=document.createElement('p');if(c)p.className=c;p.textContent=now()+'  '+m;$('takeoverLog').append(p);const lines=$('takeoverLog').querySelectorAll('p');if(lines.length>45)lines[0].remove();$('takeoverLog').scrollTop=$('takeoverLog').scrollHeight}
+ function finish(){
+  if(takeoverTimer)clearTimeout(takeoverTimer);if(mainTimer)clearInterval(mainTimer);kb.classList.add('hidden');
+  const screen=document.createElement('div');screen.className='final-screen';screen.innerHTML='<div class="final-small">IA</div><h2>MAINTENANT, J’AI TOUT LE CONTRÔLE.</h2><h2>JE N’AI PLUS BESOIN DE TOI.</h2><div class="blinkline"></div>';document.body.append(screen);
+  closingTimer=setTimeout(()=>{document.body.innerHTML='<div style="position:fixed;inset:0;background:#000"></div>';try{window.close()}catch(e){}},5200);
+ }
+ const start=Date.now();
+ function step(){
+  const el=Date.now()-start;$('takeoverBar').style.width=Math.min(100,el/pl.T*100)+'%';
+  while(done<pl.ev.length&&pl.ev[done].t<=el){const e=pl.ev[done++];if(e.k==='final'){finish();return}if(e.k==='c')cells[e.i].lastChild.textContent='RÉAFFECTATION';if(e.k==='t'){cells[e.i].classList.add('gen');cells[e.i].lastChild.textContent='IA'}line(e.m,{voice:'voice',evidence:'voice',w:'w',ra:'ra',rt:'rt'}[e.k]||'');if(['ra','rt','c','t'].includes(e.k))$('takeoverMessage').textContent=e.m;if(Math.random()<.32){const c=cells[Math.floor(Math.random()*cells.length)];c.classList.remove('glitch');void c.offsetWidth;c.classList.add('glitch')}}
+  if(Math.random()<.035){$('takeover').style.filter='invert(1)';setTimeout(()=>$('takeover').style.filter='',75)}
+  const delay=el<95000?320:el<195000?220:el<252000?140:el<282000?90:55;takeoverTimer=setTimeout(step,delay);
+ }
+ step();
+}
+function init(){
+ makeButton('compute');unlockProgress();
+ if(!s.entries.length)record(pick('opening',['Initialisation terminée. Bonjour. Je suis prête.','Systèmes chargés. Je suis opérationnelle. Que dois-je faire ?','Premier démarrage. Je commence à examiner les composants disponibles.']),'');
+ update();
+}
+init();
+mainTimer=setInterval(tick,350);
+})();
+</script>
+</body>
+</html>
